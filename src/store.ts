@@ -1,4 +1,53 @@
-import { LocalStorage } from "@raycast/api";
+import { LocalStorage, environment, Clipboard } from "@raycast/api";
+import { homedir } from "os";
+import { mkdirSync, readFileSync, writeFileSync, existsSync, appendFileSync } from "fs";
+import { join } from "path";
+
+// --- Disk persistence ---
+// History and prompts are saved to ~/.prompt-shelf/ as JSONL files.
+// This survives Raycast resets, extension reinstalls, and machine migrations.
+
+const DISK_DIR = join(homedir(), ".prompt-shelf");
+const DISK_HISTORY = join(DISK_DIR, "clipboard-history.jsonl");
+const DISK_PROMPTS = join(DISK_DIR, "prompts.json");
+
+function ensureDiskDir() {
+  if (!existsSync(DISK_DIR)) {
+    mkdirSync(DISK_DIR, { recursive: true });
+  }
+}
+
+/** Append a single clipboard entry to the JSONL file on disk */
+function appendEntryToDisk(entry: ClipboardEntry) {
+  ensureDiskDir();
+  appendFileSync(DISK_HISTORY, JSON.stringify(entry) + "\n", "utf-8");
+}
+
+/** Write the full prompt library to disk as JSON */
+function writePromptsToDisk(prompts: Prompt[]) {
+  ensureDiskDir();
+  writeFileSync(DISK_PROMPTS, JSON.stringify({ version: 1, prompts }, null, 2), "utf-8");
+}
+
+/** Read clipboard history from disk (for recovery) */
+export function readHistoryFromDisk(): ClipboardEntry[] {
+  if (!existsSync(DISK_HISTORY)) return [];
+  const lines = readFileSync(DISK_HISTORY, "utf-8").split("\n").filter(Boolean);
+  const entries: ClipboardEntry[] = [];
+  for (const line of lines) {
+    try { entries.push(JSON.parse(line)); } catch { /* skip malformed */ }
+  }
+  return entries;
+}
+
+/** Read prompts from disk (for recovery) */
+function readPromptsFromDisk(): Prompt[] {
+  if (!existsSync(DISK_PROMPTS)) return [];
+  try {
+    const data = JSON.parse(readFileSync(DISK_PROMPTS, "utf-8"));
+    return data.prompts ?? [];
+  } catch { return []; }
+}
 
 // --- Types ---
 
@@ -65,7 +114,16 @@ export function looksLikePrompt(text: string): boolean {
 
 export async function getHistory(): Promise<ClipboardEntry[]> {
   const raw = await LocalStorage.getItem<string>(HISTORY_KEY);
-  if (!raw) return [];
+  if (!raw) {
+    // Recover from disk if LocalStorage is empty (reinstall, reset)
+    const diskEntries = readHistoryFromDisk();
+    if (diskEntries.length > 0) {
+      const capped = diskEntries.slice(-MAX_HISTORY);
+      await LocalStorage.setItem(HISTORY_KEY, JSON.stringify(capped));
+      return capped;
+    }
+    return [];
+  }
   try {
     return JSON.parse(raw);
   } catch {
@@ -92,6 +150,10 @@ export async function addToHistory(
   history.unshift(entry);
   if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
   await LocalStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+  // Persist to disk (append-only, never loses data)
+  appendEntryToDisk(entry);
+
   return entry;
 }
 
@@ -118,7 +180,15 @@ export async function removeFromHistory(id: string): Promise<void> {
 
 export async function getPrompts(): Promise<Prompt[]> {
   const raw = await LocalStorage.getItem<string>(PROMPTS_KEY);
-  if (!raw) return [];
+  if (!raw) {
+    // Recover from disk
+    const diskPrompts = readPromptsFromDisk();
+    if (diskPrompts.length > 0) {
+      await LocalStorage.setItem(PROMPTS_KEY, JSON.stringify(diskPrompts));
+      return diskPrompts;
+    }
+    return [];
+  }
   try {
     return JSON.parse(raw);
   } catch {
@@ -143,6 +213,7 @@ export async function savePrompt(
   };
   prompts.unshift(prompt);
   await LocalStorage.setItem(PROMPTS_KEY, JSON.stringify(prompts));
+  writePromptsToDisk(prompts);
   return prompt;
 }
 
@@ -155,6 +226,7 @@ export async function updatePrompt(
   if (idx >= 0) {
     prompts[idx] = { ...prompts[idx], ...updates };
     await LocalStorage.setItem(PROMPTS_KEY, JSON.stringify(prompts));
+    writePromptsToDisk(prompts);
   }
 }
 
@@ -162,6 +234,7 @@ export async function deletePrompt(id: string): Promise<void> {
   const prompts = await getPrompts();
   const filtered = prompts.filter((p) => p.id !== id);
   await LocalStorage.setItem(PROMPTS_KEY, JSON.stringify(filtered));
+  writePromptsToDisk(filtered);
 }
 
 export async function recordPromptUse(id: string): Promise<void> {
