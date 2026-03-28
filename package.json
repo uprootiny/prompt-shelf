@@ -42,6 +42,13 @@
       "subtitle": "Prompt Shelf",
       "description": "Add starter prompts tailored to your workflow",
       "mode": "no-view"
+    },
+    {
+      "name": "sync-history",
+      "title": "Sync from Claude History",
+      "subtitle": "Prompt Shelf",
+      "description": "Import prompts from Claude Code conversation history",
+      "mode": "no-view"
     }
   ],
   "dependencies": {
