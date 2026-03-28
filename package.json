@@ -1,0 +1,65 @@
+{
+  "name": "prompt-shelf",
+  "title": "Prompt Shelf",
+  "description": "Clipboard history with smart prompt detection, tagging, and a searchable prompt library",
+  "icon": "extension-icon.png",
+  "author": "uprootiny",
+  "categories": ["Productivity", "Developer Tools"],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "clipboard-history",
+      "title": "Clipboard History",
+      "subtitle": "Prompt Shelf",
+      "description": "Browse clipboard history with prompt detection",
+      "mode": "view"
+    },
+    {
+      "name": "prompt-library",
+      "title": "Prompt Library",
+      "subtitle": "Prompt Shelf",
+      "description": "Browse, search, and paste saved prompts",
+      "mode": "view"
+    },
+    {
+      "name": "save-clipboard-as-prompt",
+      "title": "Save Clipboard as Prompt",
+      "subtitle": "Prompt Shelf",
+      "description": "Save current clipboard content as a named prompt",
+      "mode": "view"
+    },
+    {
+      "name": "capture-clipboard",
+      "title": "Start Clipboard Capture",
+      "subtitle": "Prompt Shelf",
+      "description": "Background: poll clipboard and log new entries",
+      "mode": "no-view",
+      "interval": "10s"
+    },
+    {
+      "name": "seed-library",
+      "title": "Seed Prompt Library",
+      "subtitle": "Prompt Shelf",
+      "description": "Add starter prompts tailored to your workflow",
+      "mode": "no-view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.93.0",
+    "@raycast/utils": "^1.19.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "22.15.17",
+    "@types/react": "19.1.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint"
+  }
+}
