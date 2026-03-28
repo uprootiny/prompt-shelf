@@ -385,13 +385,28 @@ export default function PromptLibrary() {
   const untagged = (prompts ?? []).filter((p) => p.tags.length === 0);
   const total = (prompts ?? []).length;
 
+  // Group each prompt under its FIRST tag only, to avoid duplicate display
+  const taggedGroups = new Map<string, Prompt[]>();
+  const shown = new Set<string>();
+  for (const tag of allTags) {
+    taggedGroups.set(tag, []);
+  }
+  for (const p of prompts ?? []) {
+    if (p.tags.length > 0 && !shown.has(p.id)) {
+      const primaryTag = p.tags[0];
+      taggedGroups.get(primaryTag)?.push(p);
+      shown.add(p.id);
+    }
+  }
+
   return (
     <List
       isLoading={isLoading}
       searchBarPlaceholder={`Search ${total} prompts...`}
     >
       {allTags.map((tag) => {
-        const tagged = (prompts ?? []).filter((p) => p.tags.includes(tag));
+        const tagged = taggedGroups.get(tag) ?? [];
+        if (tagged.length === 0) return null;
         return (
           <List.Section key={tag} title={tag} subtitle={`${tagged.length}`}>
             {tagged.map((prompt) => (

@@ -1,4 +1,25 @@
+# Dependencies
 node_modules/
+
+# Build output
+dist/
 .build/
+
+# macOS
 .DS_Store
+
+# Xcode
 *.xcodeproj/xcuserdata/
+
+# Raycast
+.raycast/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
