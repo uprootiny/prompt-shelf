@@ -23,6 +23,8 @@ declare namespace Preferences {
   export type CaptureClipboard = ExtensionPreferences & {}
   /** Preferences accessible in the `seed-library` command */
   export type SeedLibrary = ExtensionPreferences & {}
+  /** Preferences accessible in the `sync-history` command */
+  export type SyncHistory = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
@@ -36,5 +38,7 @@ declare namespace Arguments {
   export type CaptureClipboard = {}
   /** Arguments passed to the `seed-library` command */
   export type SeedLibrary = {}
+  /** Arguments passed to the `sync-history` command */
+  export type SyncHistory = {}
 }
 
