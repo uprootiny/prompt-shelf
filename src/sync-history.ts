@@ -52,11 +52,7 @@ export default async function SyncHistory() {
       if (!text || existingContents.has(text)) continue;
       if (!looksLikePrompt(text)) continue;
 
-      const tags = [
-        ...suggestTags(text),
-        "auto-imported",
-        "claude-code",
-      ];
+      const tags = [...suggestTags(text), "auto-imported", "claude-code"];
       await savePrompt(titleFromText(text), text, tags);
       existingContents.add(text);
       imported++;
@@ -69,11 +65,7 @@ export default async function SyncHistory() {
       if (!text || existingContents.has(text)) continue;
       if (!looksLikePrompt(text)) continue;
 
-      const tags = [
-        ...suggestTags(text),
-        "auto-imported",
-        "clipboard",
-      ];
+      const tags = [...suggestTags(text), "auto-imported", "clipboard"];
       await savePrompt(titleFromText(text), text, tags);
       existingContents.add(text);
       imported++;
@@ -81,9 +73,10 @@ export default async function SyncHistory() {
 
     await showToast({
       style: imported > 0 ? Toast.Style.Success : Toast.Style.Success,
-      title: imported > 0
-        ? `Imported ${imported} new prompt${imported === 1 ? "" : "s"}`
-        : "No new prompts found",
+      title:
+        imported > 0
+          ? `Imported ${imported} new prompt${imported === 1 ? "" : "s"}`
+          : "No new prompts found",
     });
   } catch (error) {
     await showToast({

@@ -1,6 +1,12 @@
-import { LocalStorage, environment, Clipboard } from "@raycast/api";
+import { LocalStorage } from "@raycast/api";
 import { homedir } from "os";
-import { mkdirSync, readFileSync, writeFileSync, existsSync, appendFileSync } from "fs";
+import {
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  appendFileSync,
+} from "fs";
 import { join } from "path";
 
 // --- Disk persistence ---
@@ -26,7 +32,11 @@ function appendEntryToDisk(entry: ClipboardEntry) {
 /** Write the full prompt library to disk as JSON */
 function writePromptsToDisk(prompts: Prompt[]) {
   ensureDiskDir();
-  writeFileSync(DISK_PROMPTS, JSON.stringify({ version: 1, prompts }, null, 2), "utf-8");
+  writeFileSync(
+    DISK_PROMPTS,
+    JSON.stringify({ version: 1, prompts }, null, 2),
+    "utf-8",
+  );
 }
 
 /** Read clipboard history from disk (for recovery) */
@@ -35,7 +45,11 @@ export function readHistoryFromDisk(): ClipboardEntry[] {
   const lines = readFileSync(DISK_HISTORY, "utf-8").split("\n").filter(Boolean);
   const entries: ClipboardEntry[] = [];
   for (const line of lines) {
-    try { entries.push(JSON.parse(line)); } catch { /* skip malformed */ }
+    try {
+      entries.push(JSON.parse(line));
+    } catch {
+      /* skip malformed */
+    }
   }
   return entries;
 }
@@ -46,7 +60,9 @@ function readPromptsFromDisk(): Prompt[] {
   try {
     const data = JSON.parse(readFileSync(DISK_PROMPTS, "utf-8"));
     return data.prompts ?? [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 // --- Types ---

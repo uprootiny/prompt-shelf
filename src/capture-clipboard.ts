@@ -1,5 +1,5 @@
 import { Clipboard } from "@raycast/api";
-import { addToHistory, looksLikePrompt } from "./store";
+import { addToHistory } from "./store";
 
 export default async function CaptureClipboard() {
   // Read current clipboard
